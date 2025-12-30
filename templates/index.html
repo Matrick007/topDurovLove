@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>US-21 Мессенджер</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.js"></script>
+    <!-- Уведомления -->
+    <script src="{{ url_for('static', filename='notification.js') }}"></script>
+</head>
+<body>
+    <button id="theme-toggle">☀️</button>
+
+    <div class="telegram-layout">
+        <!-- Левая панель: чаты и группы -->
+        <div class="chat-list-sidebar" id="chat-list">
+            <div class="header">
+                <h3>Чаты</h3>
+                <a href="{{ url_for('logout') }}" class="logout">Выйти</a>
+            </div>
+
+            <!-- Иконка профиля -->
+            <div class="profile-icon-container">
+                <a href="/profile" class="profile-link">
+                    <div class="profile-icon">👤</div>
+                    <span>{{ session.username }}</span>
+                </a>
+            </div>
+
+            <!-- Поиск -->
+            <div class="search-container">
+                <div class="search-input-wrapper">
+                    <input type="text" id="search-input" placeholder="Найти пользователя..." class="search-input">
+                    <span class="search-icon">🔍</span>
+                </div>
+                <div id="search-results" style="display: none;"></div>
+            </div>
+
+            <!-- Кнопка создания группы -->
+            <button onclick="openCreateGroupModal()" class="create-group-btn">➕ Создать группу</button>
+
+            <!-- Список чатов -->
+            <div class="chat-items">
+                {% for user in user_chats %}
+                    <div class="chat-item" onclick="openChat('{{ user.username }}')" data-room="{% if username|lower < user.username|lower %}{{ username|lower }}_{{ user.username|lower }}{% else %}{{ user.username|lower }}_{{ username|lower }}{% endif %}">
+                        <div class="avatar">{{ user.username[0].upper() }}</div>
+                        <div class="chat-info">
+                            <h4>{{ user.username }}{% if user.unread_count > 0 %}<span class="unread-count">{{ user.unread_count }}</span>{% endif %}</h4>
+                            <p>{{ user.last_message|truncate(25, True, '...') or 'Нажмите, чтобы начать чат' }}</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="no-users">Нет активных пользователей</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Окно чата -->
+        <div class="chat-window" id="chat-window" style="display: none;">
+            <div class="chat-header">
+                <button class="back-btn pc" onclick="goBack()">← Назад</button>
+                <button class="back-btn mobile" onclick="goBack()">←</button>
+                <h3 id="chat-username" onclick="openProfile()" style="cursor: pointer; color: #667eea;"></h3>
+                <span class="status">онлайн</span>
+            </div>
+             <div id="pinned-message"></div>
+            <div class="messages" id="messages"></div>
+            <div class="typing-indicator" id="typing" style="display: none; font-size: 13px; color: #666; padding: 16px; margin-top: -8px;"></div>
+            <div class="chat-input">
+                <input type="text" id="msg-input" placeholder="Написать сообщение..." autofocus>
+                <button id="emoji-btn">😊</button>
+                <button id="send-btn">➤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Контекстное меню для чата -->
+    <div id="chat-context-menu" style="display: none; position: absolute; background: white; border: 1px solid #ccc; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; border-radius: 8px; overflow: hidden;">
+        <div onclick="deleteCurrentChat()" style="padding: 12px 16px; cursor: pointer;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='white'">🗑️ Удалить чат</div>
+    </div>
+
+    <!-- Эмодзи-палитра -->
+<div id="emoji-picker" style="display: none; grid-template-columns: repeat(8, 1fr); gap: 8px; padding: 10px; background: var(--header-bg); border-radius: 12px; position: absolute; bottom: 70px; right: 20px; z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+    <span class="emoji-btn">😊</span>
+    <span class="emoji-btn">😂</span>
+    <span class="emoji-btn">❤️</span>
+    <span class="emoji-btn">🔥</span>
+    <span class="emoji-btn">🚀</span>
+    <span class="emoji-btn">👍</span>
+    <span class="emoji-btn">🎉</span>
+    <span class="emoji-btn">👏</span>
+    <span class="emoji-btn">😎</span>
+    <span class="emoji-btn">🤔</span>
+    <span class="emoji-btn">💡</span>
+    <span class="emoji-btn">👀</span>
+    <span class="emoji-btn">🙏</span>
+    <span class="emoji-btn">🏆</span>
+    <span class="emoji-btn">🤝</span>
+    <span class="emoji-btn">✨</span>
+</div>
+
+<script>
+    const username = "{{ session.username }}";
+    const userChats = {{ user_chats|tojson|safe }};
+    let currentRoom = null;
+    let socket = null;
+    let userStatuses = {}; // username → { status: 'online', lastSeen: Date }
+    let currentChatId = null;
+    let currentGroupId = null;
+
+    socket = io({
+        transports: ['polling']
+    });
+
+    window.chatSocket = socket;
+
+    // === ЗВУКИ ===
+    function playMessageSound() {
+        const audio = new Audio('{{ url_for("static", filename="message.mp3") }}');
+        audio.play().catch(() => {});
+    }
+
+    function playChatSound() {
+        const audio = new Audio('{{ url_for("static", filename="chat.mp3") }}');
+        audio.play().catch(() => {});
+    }
+
+    // === СООБЩЕНИЯ ===
+    socket.on('connect', () => {
+        console.log('✅ Подключено');
+    });
+
+    // === Статусы пользователей ===
+    socket.on('user_status_update', (data) => {
+        userStatuses[data.user] = {
+            status: data.status,
+            lastSeen: new Date()
+        };
+        updateChatListStatus();
+    });
+
+function updateChatListStatus() {
+    document.querySelectorAll('.chat-item').forEach(el => {
+        const user = el.querySelector('h4').textContent.replace('#', '').trim();
+        const status = userStatuses[user] ? userStatuses[user].status : 'offline';
+        const statusEl = el.querySelector('.status-dot');
+        if (statusEl) {
+            statusEl.style.background = status === 'online' ? '#07a74e' : '#ccc';
+        }
+    });
+}
+
+    // === "ПЕЧАТАЕТ" ===
+    socket.on('typing', function(data) {
+        if (data.sender !== username) {
+            document.getElementById('typing').style.display = 'block';
+            document.getElementById('typing').textContent = data.sender + ' печатает...';
+        }
+    });
+
+    socket.on('stop_typing', function() {
+        document.getElementById('typing').style.display = 'none';
+    });
+
+    function addMessageToChat(msg, isGroup = false) {
+        const messagesDiv = document.getElementById('messages');
+        const el = document.createElement('div');
+        el.className = 'message ' + (msg.sender === username ? 'sent' : 'received');
+        el.dataset.msgId = msg.id || ('temp_' + Date.now());
+        el.dataset.sender = msg.sender;
+
+        let senderName = '';
+        if (isGroup && msg.sender !== username) {
+            senderName = `<div class="sender-name">${msg.sender}</div>`;
+        }
+
+        let check = '';
+        if (msg.sender === username) {
+            if (msg.is_read || msg.status === 'read') {
+                check = '<span class="check read">✓✓</span>';
+            } else if (msg.status === 'delivered') {
+                check = '<span class="check delivered">✓✓</span>';
+            } else {
+                check = '<span class="check">✓✓</span>';
+            }
+        }
+
+        let controls = '';
+        if (msg.sender === username) {
+            controls = '<span class="msg-control delete">🗑️</span>';
+        }
+
+        el.innerHTML = `
+            ${senderName}
+            <p>${msg.message || msg.msg}</p>
+            <span class="time">${msg.timestamp || new Date().toLocaleTimeString('ru-RU', { timeZone: 'Europe/Moscow', hour: '2-digit', minute: '2-digit' })}</span>
+            ${check}
+            ${controls}
+        `;
+        messagesDiv.appendChild(el);
+    }
+
+    // === ПОЛУЧЕНИЕ СООБЩЕНИЯ ===
+    socket.on('receive_message', function(data) {
+        console.log('Receive message in', data.room, 'current', currentRoom, 'msg', data.msg);
+        if (currentRoom === data.room) {
+            addMessageToChat(data, currentRoom && currentRoom.startsWith('group_'));
+            scrollToBottom();
+            // Звук
+            if (data.sender !== username) {
+                playChatSound();
+            }
+        } else {
+            // Новое сообщение в другом чате - добавить индикатор
+            updateChatNotification(data.room, data.sender !== username);
+            // Звук
+            if (data.sender !== username) {
+                playMessageSound();
+                if (!document.hasFocus()) {
+                    showNotification(data.sender, data.msg);
+                }
+            }
+        }
+    });
+
+    // === УДАЛЕНИЕ СООБЩЕНИЯ ===
+    socket.on('message_deleted', function(data) {
+        const msg = document.getElementById('messages').querySelector(`[data-msg-id="${data.msg_id}"]`);
+        if (msg) {
+            msg.innerHTML = '<p><i>Сообщение удалено</i></p>';
+            msg.classList.add('deleted');
+            msg.querySelector('.msg-control')?.remove();
+        }
+    });
+
+    // === ГАЛОЧКИ ===
+    socket.on('message_status', function(data) {
+        if (data.room && data.room !== currentRoom) return;
+        const msg = document.getElementById('messages').querySelector(`[data-msg-id="${data.msg_id}"]`);
+        if (msg) {
+            const check = msg.querySelector('.check');
+            if (data.status === 'delivered') {
+                check.className = 'check delivered';
+            } else if (data.status === 'read') {
+                check.className = 'check read';
+            }
+        }
+    });
+
+    // === ЗАКРЕП ===
+    socket.on('pinned_message', function(data) {
+        if (currentRoom === `group_${data.group}`) {
+            const pinned = document.getElementById('pinned-message');
+            pinned.innerHTML = `
+                <div style="font-size: 12px; color: #666; margin: 10px 0; padding: 8px 12px; background: var(--header-bg); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                    Закрепленное сообщение: "${data.msg_id}"
+                    <span onclick="unpinMessage('${data.group}')" style="float: right; cursor: pointer; opacity: 0.6;">✕</span>
+                </div>
+            `;
+        }
+    });
+
+    socket.on('unpinned_message', function(data) {
+        if (currentRoom === `group_${data.group}`) {
+            document.getElementById('pinned-message').innerHTML = '';
+        }
+    });
+
+    function openChat(otherUser) {
+        document.getElementById('chat-username').textContent = otherUser;
+        const room = [username, otherUser].sort().join('_').toLowerCase();
+        currentRoom = room;
+
+        _openChatCommon(room, false, otherUser);
+    }
+
+    function openGroup(groupName) {
+        document.getElementById('chat-username').textContent = `# ${groupName}`;
+        const room = `group_${groupName}`;
+        currentRoom = room;
+
+        _openChatCommon(room, true, null);
+    }
+
+    function _openChatCommon(room, isGroup, otherUser) {
+        document.getElementById('chat-list').style.display = 'none';
+        document.getElementById('chat-window').style.display = 'flex';
+        const messagesDiv = document.getElementById('messages');
+        messagesDiv.innerHTML = '';
+        document.getElementById('typing').style.display = 'none';
+        document.getElementById('pinned-message').innerHTML = '';
+
+        socket.emit('set_chat_context', { room: room });
+        socket.emit('join', { room: room });
+        updateChatNotification(room, false); // Убрать индикатор нового сообщения
+        loadChatList(); // Обновить список, чтобы сбросить unread_count
+
+        // Мгновенно обновить галочки на прочитано
+        setTimeout(() => {
+            console.log('Updating checks to read');
+            document.querySelectorAll('.message.sent .check').forEach(check => {
+                check.className = 'check read';
+            });
+        }, 100); // Небольшая задержка для обновления
+
+        const url = isGroup
+            ? `/group/${room.replace('group_', '')}/history`
+            : `/chat/${room.split('_').find(u => u !== username)}/history`;
+
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (isGroup) {
+                    currentGroupId = data.group_id;
+                    currentChatId = null;
+                } else {
+                    currentChatId = data.chat_id;
+                    currentGroupId = null;
+                }
+
+                if (data.pinned) {
+                    document.getElementById('pinned-message').innerHTML = `
+                        <div style="font-size: 12px; color: #666; margin: 10px 0; padding: 8px 12px; background: var(--header-bg); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                            Закрепленное сообщение: "${data.pinned.message}"
+                            <span onclick="unpinMessage('${room.replace('group_', '')}')" style="float: right; cursor: pointer; opacity: 0.6;">✕</span>
+                        </div>
+                    `;
+                }
+
+                if (!isGroup && data.messages.length === 0) {
+                    // Новый чат, уведомить другого пользователя
+                    socket.emit('new_chat', { with: otherUser });
+                }
+
+                console.log('Loaded messages', data.messages.length, 'for room', room);
+                data.messages.forEach(msg => {
+                    addMessageToChat(msg, isGroup);
+                });
+                scrollToBottom();
+            });
+
+        // Очистка
+        ['receive_message', 'message_status', 'typing', 'stop_typing', 'message_deleted', 'pinned_message', 'unpinned_message'].forEach(e => socket.off(e));
+
+        // Переподключаем
+        socket.on('receive_message', function(data) {
+            addMessageToChat(data, isGroup);
+            scrollToBottom();
+
+            if (data.sender !== username) {
+                if (currentRoom === data.room) {
+                    playChatSound();
+                } else {
+                    playMessageSound();
+                    if (!document.hasFocus()) {
+                        showNotification(data.sender, data.msg);
+                    }
+                }
+            }
+        });
+
+        socket.on('message_deleted', function(data) {
+            const msg = messagesDiv.querySelector(`[data-msg-id="${data.msg_id}"]`);
+            if (msg) {
+                msg.innerHTML = '<p><i>Сообщение удалено</i></p>';
+                msg.classList.add('deleted');
+                msg.querySelector('.msg-control')?.remove();
+            }
+        });
+
+        socket.on('message_status', function(data) {
+            if (data.room && data.room !== currentRoom) return;
+            const msg = messagesDiv.querySelector(`[data-msg-id="${data.msg_id}"]`);
+            if (msg) {
+                const check = msg.querySelector('.check');
+                if (data.status === 'delivered') {
+                    check.className = 'check delivered';
+                } else if (data.status === 'read') {
+                    check.className = 'check read';
+                }
+            }
+        });
+
+        socket.on('pinned_message', function(data) {
+            document.getElementById('pinned-message').innerHTML = `
+                <div style="font-size: 12px; color: #666; margin: 10px 0; padding: 8px 12px; background: var(--header-bg); border-left: 3px solid var(--accent-color); border-radius: 4px;">
+                    Закрепленное сообщение: "${data.msg_id}"
+                    <span onclick="unpinMessage('${data.group}')" style="float: right; cursor: pointer; opacity: 0.6;">✕</span>
+                </div>
+            `;
+        });
+
+        socket.on('unpinned_message', function(data) {
+            document.getElementById('pinned-message').innerHTML = '';
+        });
+
+        socket.on('typing', function(data) {
+            if (data.sender !== username) {
+                document.getElementById('typing').style.display = 'block';
+                document.getElementById('typing').textContent = data.sender + ' печатает...';
+            }
+        });
+
+        socket.on('stop_typing', function() {
+            document.getElementById('typing').style.display = 'none';
+        });
+
+        // Удаление
+        messagesDiv.addEventListener('click', function(e) {
+            if (e.target.classList.contains('delete')) {
+                const msgId = e.target.closest('.message').dataset.msgId;
+                if (msgId && msgId.startsWith('temp_')) return;
+                if (confirm('Удалить это сообщение?')) {
+                    socket.emit('delete_message', { msg_id: msgId, room: currentRoom });
+                }
+            }
+        });
+
+        // Отправка
+        document.getElementById('send-btn').onclick = function() {
+            const msg = document.getElementById('msg-input').value.trim();
+            if (msg) {
+                socket.emit('send_message', { room: room, msg: msg });
+                document.getElementById('msg-input').value = '';
+            }
+        };
+
+        // Закреп
+        messagesDiv.addEventListener('contextmenu', function(e) {
+            if (e.target.closest('.message') && currentRoom.startsWith('group_')) {
+                e.preventDefault();
+                const msgId = e.target.closest('.message').dataset.msgId;
+                if (msgId && !msgId.startsWith('temp_') && confirm('Закрепить это сообщение?')) {
+                    const group = currentRoom.replace('group_', '');
+                    socket.emit('pin_message', { group: group, msg_id: msgId });
+                }
+            }
+        });
+
+        // Эмодзи
+        document.getElementById('emoji-btn').onclick = () => {
+            const picker = document.getElementById('emoji-picker');
+            picker.style.display = picker.style.display === 'grid' ? 'none' : 'grid';
+        };
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('emoji-btn')) {
+                const input = document.getElementById('msg-input');
+                if (input) {
+                    input.value += e.target.textContent;
+                    input.focus();
+                }
+            }
+        });
+
+        scrollToBottom();
+        requestNotificationPermission();
+    }
+
+    function unpinMessage(group) {
+        if (confirm('Открепить сообщение?')) {
+            socket.emit('unpin_message', { group: group });
+        }
+    }
+
+    function createGroup() {
+        const name = prompt("Название группы:");
+        if (name) {
+            socket.emit('create_group', { name: name });
+        }
+    }
+
+    function openProfile() {
+        const username = document.getElementById('chat-username').textContent.trim();
+        if (username && !username.startsWith('#')) {
+            window.location.href = '/profile/' + username;
+        }
+    }
+
+    function goBack() {
+        document.getElementById('chat-list').style.display = 'flex';
+        document.getElementById('chat-window').style.display = 'none';
+        currentRoom = null;
+        socket.emit('set_chat_context', { room: '' });
+    }
+
+    function scrollToBottom() {
+        const div = document.getElementById('messages');
+        div.scrollTop = div.scrollHeight;
+    }
+
+    window.onload = () => {
+        const isDark = localStorage.getItem('theme') === 'dark';
+        if (isDark) document.body.classList.add('dark');
+        document.getElementById('theme-toggle').textContent = isDark ? '🌙' : '☀️';
+
+        if (window.innerWidth >= 768) {
+            document.getElementById('chat-list').style.display = 'flex';
+        }
+
+        // Отправка по Enter
+        document.getElementById('msg-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('send-btn').click();
+            }
+        });
+
+        const groupsContainer = document.querySelector('.chat-items');
+        const userGroupsRaw = '{{ user_groups|tojson|safe }}';
+        const userGroups = userGroupsRaw ? JSON.parse(userGroupsRaw) : [];
+
+        if (Array.isArray(userGroups) && groupsContainer) {
+            userGroups.forEach(g => {
+                const el = document.createElement('div');
+                el.className = 'chat-item';
+                el.dataset.room = `group_${g.name}`;
+                el.onclick = () => openGroup(g.name);
+                el.innerHTML = `
+                    <div class="avatar">#</div>
+                    <div class="chat-info">
+                        <h4>#${g.name}${g.unread_count > 0 ? `<span class="unread-count">${g.unread_count}</span>` : ''}</h4>
+                        <p>${g.last_message ? g.last_message.substring(0, 25) + (g.last_message.length > 25 ? '...' : '') : 'Групповой чат'}</p>
+                    </div>
+                    <div class="status-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #ccc;"></div>
+                `;
+                groupsContainer.appendChild(el);
+            });
+        }
+
+        updateChatListStatus();
+    };
+
+    document.getElementById('theme-toggle').onclick = () => {
+        const isDark = document.body.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        document.getElementById('theme-toggle').textContent = isDark ? '🌙' : '☀️';
+    };
+
+    // Поиск пользователей - инициализация после загрузки
+    window.addEventListener('load', function() {
+        const searchInput = document.getElementById('search-input');
+        const resultsDiv = document.getElementById('search-results');
+        console.log('searchInput:', searchInput);
+        console.log('resultsDiv:', resultsDiv);
+
+        if (searchInput && resultsDiv) {
+            searchInput.addEventListener('input', function() {
+                performSearch();
+            });
+
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    // Можно добавить логику для Enter, но сейчас input уже ищет
+                }
+            });
+
+            function performSearch() {
+                const query = searchInput.value.trim();
+                if (query.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+                fetch('/search_users?q=' + encodeURIComponent(query))
+                .then(r => r.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+                    if (data.users.length > 0) {
+                        data.users.forEach(user => {
+                            const div = document.createElement('div');
+                            div.textContent = user.username;
+                            div.onclick = () => {
+                                openChat(user.username);
+                                resultsDiv.style.display = 'none';
+                                searchInput.value = '';
+                            };
+                            resultsDiv.appendChild(div);
+                        });
+                        resultsDiv.style.display = 'block';
+                    } else {
+                        resultsDiv.style.display = 'none';
+                    }
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('#search-input') && !e.target.closest('#search-results')) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    // Контекстное меню для чата
+    document.addEventListener('contextmenu', function(e) {
+        if (e.target.closest('.chat-window') && currentRoom) {
+            e.preventDefault();
+            const menu = document.getElementById('chat-context-menu');
+            menu.style.display = 'block';
+            menu.style.left = e.pageX + 'px';
+            menu.style.top = e.pageY + 'px';
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('#chat-context-menu')) {
+            document.getElementById('chat-context-menu').style.display = 'none';
+        }
+    });
+
+    function deleteCurrentChat() {
+        document.getElementById('chat-context-menu').style.display = 'none';
+        openDeleteModal();
+    }
+
+    function openDeleteModal() {
+        const modal = document.getElementById('delete-modal');
+        const title = modal.querySelector('h3');
+        const desc = modal.querySelector('p');
+
+        if (currentChatId) {
+            title.textContent = 'Удалить чат?';
+            desc.textContent = 'Все сообщения в этом чате будут удалены навсегда. Это действие нельзя отменить.';
+        } else if (currentGroupId) {
+            title.textContent = 'Удалить группу?';
+            desc.textContent = 'Группа и все её сообщения будут удалены навсегда. Участники потеряют доступ. Это действие нельзя отменить.';
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('delete-modal').style.display = 'none';
+    }
+
+    function confirmDelete() {
+        if (currentChatId) {
+            fetch('/delete_chat/' + currentChatId, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    closeDeleteModal();
+                    goBack();
+                    location.reload(); // обновить список чатов
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            });
+        } else if (currentGroupId) {
+            const groupName = currentRoom.replace('group_', '');
+            fetch('/delete_group/' + groupName, { method: 'POST' })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    closeDeleteModal();
+                    goBack();
+                    location.reload();
+                } else {
+                    alert('Ошибка: ' + data.error);
+                }
+            });
+        }
+    }
+
+    function openCreateGroupModal() {
+        document.getElementById('create-group-modal').style.display = 'flex';
+        document.getElementById('group-name-input').focus();
+        loadGroupMembers();
+    }
+
+    function closeCreateGroupModal() {
+        document.getElementById('create-group-modal').style.display = 'none';
+        document.getElementById('group-name-input').value = '';
+        document.getElementById('group-members').innerHTML = '';
+    }
+
+    function loadGroupMembers() {
+        const membersDiv = document.getElementById('group-members');
+        membersDiv.innerHTML = '';
+        // Получить пользователей с которыми есть чат
+        userChats.forEach(user => {
+            const label = document.createElement('label');
+            label.style.display = 'flex';
+            label.style.alignItems = 'center';
+            label.style.marginBottom = '8px';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.value = user.username;
+            checkbox.style.marginRight = '8px';
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = user.username[0].toUpperCase();
+            avatar.style.width = '32px';
+            avatar.style.height = '32px';
+            avatar.style.marginRight = '8px';
+            const name = document.createElement('span');
+            name.textContent = user.username;
+            label.appendChild(checkbox);
+            label.appendChild(avatar);
+            label.appendChild(name);
+            membersDiv.appendChild(label);
+        });
+    }
+
+    function createGroup() {
+        const name = document.getElementById('group-name-input').value.trim();
+        if (!name) return;
+        const selectedMembers = Array.from(document.querySelectorAll('#group-members input[type="checkbox"]:checked')).map(cb => cb.value);
+        socket.emit('create_group', { name: name, members: selectedMembers });
+        closeCreateGroupModal();
+    }
+
+    // Слушатель для новой группы
+    socket.on('group_created', function(data) {
+        if (data.name) {
+            addGroupToList(data.name);
+        }
+    });
+
+    socket.on('update_chat_list', () => {
+        loadChatList();
+    });
+
+    function loadChatList() {
+        fetch('/chat_list')
+        .then(r => r.json())
+        .then(data => {
+            const container = document.querySelector('.chat-items');
+            container.innerHTML = '';
+
+            // Добавить пользователей
+            data.user_chats.forEach(user => {
+                const el = document.createElement('div');
+                el.className = 'chat-item';
+                el.dataset.room = [username, user.username].sort().join('_').toLowerCase();
+                el.onclick = () => openChat(user.username);
+                el.innerHTML = `
+                    <div class="avatar">${user.username[0].toUpperCase()}</div>
+                    <div class="chat-info">
+                        <h4>${user.username}${user.unread_count > 0 ? `<span class="unread-count">${user.unread_count}</span>` : ''}</h4>
+                        <p>${user.last_message ? user.last_message.substring(0, 25) + (user.last_message.length > 25 ? '...' : '') : 'Нажмите, чтобы начать чат'}</p>
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+
+            // Добавить группы
+            data.user_groups.forEach(g => {
+                const el = document.createElement('div');
+                el.className = 'chat-item';
+                el.dataset.room = `group_${g.name}`;
+                el.onclick = () => openGroup(g.name);
+                el.innerHTML = `
+                    <div class="avatar">#</div>
+                    <div class="chat-info">
+                        <h4>#${g.name}${g.unread_count > 0 ? `<span class="unread-count">${g.unread_count}</span>` : ''}</h4>
+                        <p>${g.last_message ? g.last_message.substring(0, 25) + (g.last_message.length > 25 ? '...' : '') : 'Групповой чат'}</p>
+                    </div>
+                    <div class="status-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #ccc;"></div>
+                `;
+                container.appendChild(el);
+            });
+
+            updateChatListStatus();
+        });
+    }
+
+    function addGroupToList(groupName) {
+        // После создания группы, loadChatList обновит всё
+        loadChatList();
+    }
+
+    function updateChatNotification(room, hasNew = true) {
+        console.log('updateChatNotification', room, hasNew);
+        const chatItem = document.querySelector(`.chat-item[data-room="${room}"]`);
+        console.log('chatItem', chatItem);
+        if (chatItem) {
+            if (hasNew) {
+                let badge = chatItem.querySelector('.new-msg-badge');
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'new-msg-badge';
+                    badge.textContent = '•';
+                    chatItem.querySelector('.chat-info').appendChild(badge);
+                }
+                chatItem.classList.add('has-new-msg');
+            } else {
+                chatItem.querySelector('.new-msg-badge')?.remove();
+                chatItem.classList.remove('has-new-msg');
+            }
+        }
+    }
+</script>
+
+<!-- Модальное окно создания группы -->
+<div id="create-group-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: var(--bg-color); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); width: 400px; max-width: 90%;">
+        <h3 style="margin-top: 0; color: var(--text-color);">Создать группу</h3>
+        <input type="text" id="group-name-input" placeholder="Название группы" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-color); box-sizing: border-box;">
+        <div style="margin-top: 20px;">
+            <h4 style="margin: 0 0 10px 0; color: var(--text-color);">Добавить участников</h4>
+            <div id="group-members" style="max-height: 200px; overflow-y: auto;"></div>
+        </div>
+        <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button onclick="closeCreateGroupModal()" style="padding: 10px 20px; border: none; border-radius: 8px; background: #ccc; cursor: pointer;">Отмена</button>
+            <button onclick="createGroup()" style="padding: 10px 20px; border: none; border-radius: 8px; background: var(--accent-color); color: white; cursor: pointer;">Создать</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно удаления чата/группы -->
+<div id="delete-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: var(--bg-color); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); width: 400px; max-width: 90%;">
+        <div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 48px; color: #ff6b6b;">🗑️</div>
+        </div>
+        <h3 style="margin-top: 0; color: var(--text-color);">Удалить чат?</h3>
+        <p style="color: #666; margin: 10px 0; line-height: 1.5;">Все сообщения в этом чате будут удалены навсегда. Это действие нельзя отменить.</p>
+        <div style="display: flex; justify-content: center; gap: 10px;">
+            <button onclick="closeDeleteModal()" style="padding: 10px 20px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); cursor: pointer;">Отмена</button>
+            <button onclick="confirmDelete()" style="padding: 10px 20px; border: none; border-radius: 8px; background: #ff6b6b; color: white; cursor: pointer; font-weight: 500;">Удалить</button>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

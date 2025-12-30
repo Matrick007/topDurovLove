@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ user.username }} - Профиль</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-container {
+            max-width: 900px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.15);
+            animation: slideIn 0.8s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 50px 30px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .avatar-big {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-weight: bold;
+            border: 4px solid rgba(255,255,255,0.4);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        .profile-details {
+            font-size: 16px;
+            margin: 0 0 10px;
+            opacity: 0.9;
+            position: relative;
+            z-index: 2;
+        }
+
+        .profile-bio {
+            font-size: 18px;
+            margin: 0 0 20px;
+            line-height: 1.4;
+            position: relative;
+            z-index: 2;
+        }
+
+        .more-info-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.4);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .more-info-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .edit-profile-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            margin-left: 10px;
+        }
+
+        .edit-profile-btn:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 18px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+        }
+
+        .stat:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-weight: bold;
+            font-size: 24px;
+            display: block;
+        }
+
+        .follow-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%);
+            color: white;
+            border: none;
+            padding: 14px 35px;
+            border-radius: 30px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+            position: relative;
+            z-index: 2;
+        }
+
+        .follow-btn:hover {
+            background: linear-gradient(135deg, #ff5252 0%, #fb8c00 100%);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.6);
+        }
+
+        .profile-body {
+            padding: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e1e8ed;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .posts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .post {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .post:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .post-content {
+            padding: 20px;
+        }
+
+        .post-text {
+            margin: 0 0 15px;
+            font-size: 17px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 10px;
+        }
+
+        .like-btn { color: #e74c3c; }
+        .comment-btn { color: #3498db; }
+        .repost-btn { color: #27ae60; }
+
+        .action-btn:hover {
+            transform: scale(1.1);
+            background: rgba(0,0,0,0.05);
+        }
+
+        .stats {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+
+        .create-post {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .create-post textarea {
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 16px;
+            resize: vertical;
+            outline: none;
+        }
+
+        .create-post button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .create-post button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin: 20px 0;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <div class="profile-header">
+            <div class="avatar-big">{{ user.username[0].upper() }}</div>
+            <h1 class="profile-name">{{ user.username }}</h1>
+            <p class="profile-details">Зарегистрирован в {{ user.registration_date.strftime('%B %Y') if user.registration_date else 'Неизвестно' }} • {{ user.city or 'Город не указан' }}</p>
+            <p class="profile-bio">{{ user.bio_short or 'Биография не указана' }}</p>
+            <button class="more-info-btn" onclick="showMoreInfo()">Подробнее</button>
+            {% if is_owner %}
+                <button class="edit-profile-btn" id="edit-profile-btn">Редактировать профиль</button>
+            {% endif %}
+            <div class="profile-stats">
+                <div class="stat">
+                    <div class="stat-number">{{ posts|length if posts else 0 }}</div>
+                    <div>Постов</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">{{ followers|length if followers else 0 }}</div>
+                    <div>Подписчиков</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">{{ following|length if following else 0 }}</div>
+                    <div>Подписок</div>
+                </div>
+            </div>
+            {% if not is_owner %}
+                <button class="follow-btn" onclick="toggleFollow('{{ user.username }}')" id="follow-btn">
+                    {{ 'Отписаться' if is_following else 'Подписаться' }}
+                </button>
+            {% endif %}
+        </div>
+
+        <div class="profile-body">
+            {% if is_owner %}
+                <div class="create-post">
+                    <form id="post-form">
+                        <textarea name="content" placeholder="Что у вас нового?" rows="3" required></textarea>
+                        <button type="submit">Опубликовать</button>
+                    </form>
+                </div>
+            {% endif %}
+
+            <div class="tabs">
+                <div class="tab active" onclick="showTab('posts')">Посты</div>
+                {% if is_owner %}
+                    <div class="tab" onclick="showTab('feed')">Лента</div>
+                {% endif %}
+            </div>
+
+            <div id="posts-tab" class="posts-grid">
+                {% for post in posts %}
+                    <div class="post">
+                        <div class="post-content">
+                            <p class="post-text">{{ post.content }}</p>
+                            <div class="post-actions">
+                                <button class="action-btn like-btn" onclick="toggleLike({{ post.id }}, this)">
+                                    ❤️ {{ post.likes_count or 0 }}
+                                </button>
+                                <button class="action-btn comment-btn" onclick="showComments({{ post.id }})">
+                                    💬 {{ post.comments_count or 0 }}
+                                </button>
+                                <button class="action-btn repost-btn" onclick="toggleRepost({{ post.id }}, this)">
+                                    🔄 {{ post.reposts_count or 0 }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            {% if is_owner %}
+                <div id="feed-tab" class="posts-grid" style="display: none;">
+                    {% for post in feed %}
+                        <div class="post">
+                            <div class="post-content">
+                                <strong>{{ post.username }}</strong>
+                                <p class="post-text">{{ post.content }}</p>
+                                <div class="post-actions">
+                                    <button class="action-btn like-btn" onclick="toggleLike({{ post.id }}, this)">
+                                        ❤️ {{ post.likes_count or 0 }}
+                                    </button>
+                                    <button class="action-btn comment-btn" onclick="showComments({{ post.id }})">
+                                        💬 {{ post.comments_count or 0 }}
+                                    </button>
+                                    <button class="action-btn repost-btn" onclick="toggleRepost({{ post.id }}, this)">
+                                        🔄 {{ post.reposts_count or 0 }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('index') }}" class="back-link">← Вернуться в чат</a>
+    </div>
+
+    <!-- Модальное окно подробной информации -->
+    <div id="more-info-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 500px; max-width: 90%; position: relative;">
+            <button onclick="closeMoreInfo()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+            <h2 style="margin-top: 0; color: #333;">Подробная информация</h2>
+            <p><strong>Страна:</strong> {{ user.country or 'Не указана' }}</p>
+            <p><strong>Языки:</strong> {{ user.languages or 'Не указаны' }}</p>
+            <p><strong>Увлечения:</strong> {{ user.hobbies or 'Не указаны' }}</p>
+            <p><strong>Полная биография:</strong> {{ user.bio_full or 'Не указана' }}</p>
+        </div>
+    </div>
+
+    <!-- Модальное окно редактирования профиля -->
+    <div id="edit-profile-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(20px); padding: 30px; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); width: 500px; max-width: 90%; position: relative;">
+            <button onclick="closeEditProfile()" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+            <h2 style="margin-top: 0; color: #333;">Редактировать профиль</h2>
+            <form id="edit-profile-form">
+                <label>Город:</label><br>
+                <input type="text" name="city" value="{{ user.city or '' }}" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px;"><br>
+                <label>Краткая биография (10 слов):</label><br>
+                <textarea name="bio_short" rows="2" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px;">{{ user.bio_short or '' }}</textarea><br>
+                <label>Страна:</label><br>
+                <input type="text" name="country" value="{{ user.country or '' }}" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px;"><br>
+                <label>Языки:</label><br>
+                <input type="text" name="languages" value="{{ user.languages or '' }}" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px;"><br>
+                <label>Увлечения:</label><br>
+                <input type="text" name="hobbies" value="{{ user.hobbies or '' }}" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px;"><br>
+                <label>Полная биография:</label><br>
+                <textarea name="bio_full" rows="4" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 10px;">{{ user.bio_full or '' }}</textarea><br>
+                <button type="submit" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer;">Сохранить</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        async function toggleFollow(username) {
+            const btn = document.getElementById('follow-btn');
+            const isFollowing = btn.textContent.trim() === 'Отписаться';
+            const endpoint = isFollowing ? '/unfollow/' : '/follow/';
+            const res = await fetch(endpoint + username, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                btn.textContent = isFollowing ? 'Подписаться' : 'Отписаться';
+            } else {
+                alert(data.error);
+            }
+        }
+
+        document.getElementById('post-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const res = await fetch('/create_post', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        });
+
+        document.getElementById('edit-profile-btn').addEventListener('click', showEditProfile);
+
+        document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const res = await fetch('/update_profile', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.error);
+            }
+        });
+
+        async function toggleLike(postId, btn) {
+            const isLiked = btn.style.color === 'rgb(231, 76, 60)';
+            const endpoint = isLiked ? '/unlike/' : '/like/';
+            const res = await fetch(endpoint + postId, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                btn.style.color = isLiked ? '#999' : '#e74c3c';
+                const match = btn.textContent.match(/(\d+)/);
+                const currentCount = match ? parseInt(match[0]) : 0;
+                const count = currentCount + (isLiked ? -1 : 1);
+                btn.innerHTML = btn.innerHTML.replace(/\d+/, count);
+            }
+        }
+
+        async function toggleRepost(postId, btn) {
+            const isReposted = btn.style.color === 'rgb(39, 174, 96)';
+            const endpoint = isReposted ? '/unrepost/' : '/repost/';
+            const res = await fetch(endpoint + postId, { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                btn.style.color = isReposted ? '#999' : '#27ae60';
+                const match = btn.textContent.match(/(\d+)/);
+                const currentCount = match ? parseInt(match[0]) : 0;
+                const count = currentCount + (isReposted ? -1 : 1);
+                btn.innerHTML = btn.innerHTML.replace(/\d+/, count);
+            }
+        }
+
+        function showComments(postId) {
+            alert('Комментарии пока не реализованы');
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+            document.getElementById('posts-tab').style.display = tab === 'posts' ? 'grid' : 'none';
+            if (document.getElementById('feed-tab')) {
+                document.getElementById('feed-tab').style.display = tab === 'feed' ? 'grid' : 'none';
+            }
+        }
+
+        function showMoreInfo() {
+            const modal = document.getElementById('more-info-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closeMoreInfo() {
+            document.getElementById('more-info-modal').style.display = 'none';
+        }
+
+        function showEditProfile() {
+            const modal = document.getElementById('edit-profile-modal');
+            modal.style.display = 'flex';
+        }
+
+        function closeEditProfile() {
+            document.getElementById('edit-profile-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
