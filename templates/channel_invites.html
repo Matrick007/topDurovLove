@@ -1,0 +1,192 @@
+<div class="tab-content" id="invites">
+
+    <div style="margin-bottom: 30px;">
+        <h3 style="margin-bottom: 20px;"><i class="fas fa-envelope"></i> Создать новый инвайт</h3>
+        <div id="invite-result" style="display: none; margin-top: 20px; padding: 15px; background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; border-radius: 5px;"></div>
+        <form id="create-invite-form" class="create-invite-form" method="POST" action="/create_channel_invite">
+            <input type="hidden" name="channel_name" value="{{ channel.name }}">
+            <div class="form-group">
+                <label>Срок действия (дни, опционально)</label>
+                <input type="number" name="expires_days" placeholder="Не ограничено">
+            </div>
+            <div class="form-group">
+                <label>Максимум использований (опционально)</label>
+                <input type="number" name="max_uses" placeholder="Не ограничено">
+            </div>
+            <button type="button" class="btn btn-primary" onclick="createInvite()">
+                <i class="fas fa-plus"></i>
+                Создать
+            </button>
+        </form>
+    </div>
+
+    <div class="invites-list">
+        {% for invite in invites %}
+        <div class="invite-card">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                <div>
+                    <strong style="font-size: 16px;">Инвайт #{{ invite.id }}</strong>
+                    <div style="color: #666; font-size: 12px; margin-top: 4px;">
+                        Создан: {{ invite.created_at }}
+                    </div>
+                </div>
+                <div>
+                    <button class="copy-btn" data-link="{{ url_for('join_channel_via_invite_get', invite_code=invite.invite_code, _external=True) }}" onclick="copyToClipboard(this.dataset.link)">
+                        <i class="fas fa-copy"></i>
+                        Копировать ссылку
+                    </button>
+                    <button class="delete-btn button-orange" data-invite-id="{{ invite.id }}" onclick="deleteInvite(this.dataset.inviteId)">
+                        <i class="fas fa-trash"></i>
+                        Удалить
+                    </button>
+                </div>
+            </div>
+            <div class="invite-link">
+                {{ url_for('join_channel_via_invite_get', invite_code=invite.invite_code, _external=True) }}
+            </div>
+            <div class="invite-stats">
+                <div class="stat">
+                    <i class="fas fa-users"></i>
+                    Использований: {{ invite.uses }}{% if invite.max_uses %} / {{ invite.max_uses }}{% endif %}
+                </div>
+                {% if invite.expires_at %}
+                <div class="stat">
+                    <i class="fas fa-clock"></i>
+                    Истекает: {{ invite.expires_at }}
+                </div>
+                {% endif %}
+                <div class="stat">
+                    <i class="fas fa-user"></i>
+                    Создал: {{ invite.created_by_username or 'Неизвестен' }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        function createInvite() {
+            console.log('createInvite called');
+            const form = document.getElementById('create-invite-form');
+            const submitButton = form.querySelector('button[type="button"]');
+            submitButton.disabled = true;
+            submitButton.innerHTML = 'Создание...';
+            const formData = new FormData(form);
+            console.log('Sending fetch to /create_channel_invite');
+            fetch('/create_channel_invite', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                console.log('Response received:', response);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data received:', data);
+                const resultDiv = document.getElementById('invite-result');
+                if (data.success) {
+                    // Создать новый инвайт в списке
+                    const invite = data.invite;
+                    const invitesList = document.querySelector('.invites-list');
+                    const newInviteCard = document.createElement('div');
+                    newInviteCard.className = 'invite-card';
+                    newInviteCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                            <div>
+                                <strong style="font-size: 16px;">Инвайт #${invite.id}</strong>
+                                <div style="color: #666; font-size: 12px; margin-top: 4px;">
+                                    Создан: ${invite.created_at}
+                                </div>
+                            </div>
+                            <div>
+                                <button class="copy-btn" data-link="${window.location.origin}/join_channel_via_invite/${invite.invite_code}" onclick="copyToClipboard(this.dataset.link)">
+                                    <i class="fas fa-copy"></i>
+                                    Копировать ссылку
+                                </button>
+                                <button class="delete-btn button-orange" data-invite-id="${invite.id}" onclick="deleteInvite(this.dataset.inviteId)">
+                                    <i class="fas fa-trash"></i>
+                                    Удалить
+                                </button>
+                            </div>
+                        </div>
+                        <div class="invite-link">
+                            ${window.location.origin}/join_channel_via_invite/${invite.invite_code}
+                        </div>
+                        <div class="invite-stats">
+                            <div class="stat">
+                                <i class="fas fa-users"></i>
+                                Использований: ${invite.uses}${invite.max_uses ? ' / ' + invite.max_uses : ''}
+                            </div>
+                            ${invite.expires_at ? `<div class="stat"><i class="fas fa-clock"></i>Истекает: ${invite.expires_at}</div>` : ''}
+                            <div class="stat">
+                                <i class="fas fa-user"></i>
+                                Создал: ${invite.created_by_username || 'Неизвестен'}
+                            </div>
+                        </div>
+                    `;
+                    invitesList.appendChild(newInviteCard);
+
+                    const inviteUrl = window.location.origin + '/join_channel_via_invite/' + data.invite_code;
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle"></i><strong>Инвайт создан!</strong><br>Ссылка: <a href="' + inviteUrl + '" target="_blank">' + inviteUrl + '</a>';
+                    resultDiv.style.display = 'block';
+                    // Очистить форму
+                    form.reset();
+                    // Скрыть уведомление через 3 секунды
+                    setTimeout(() => { resultDiv.style.display = 'none'; }, 3000);
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-plus"></i> Создать';
+                } else {
+                    resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i><strong>Ошибка:</strong> ' + data.error;
+                    resultDiv.style.backgroundColor = '#f8d7da';
+                    resultDiv.style.borderColor = '#f5c6cb';
+                    resultDiv.style.color = '#721c24';
+                    resultDiv.style.display = 'block';
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fas fa-plus"></i> Создать';
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                const resultDiv = document.getElementById('invite-result');
+                resultDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i><strong>Ошибка:</strong> Не удалось создать инвайт';
+                resultDiv.style.backgroundColor = '#f8d7da';
+                resultDiv.style.borderColor = '#f5c6cb';
+                resultDiv.style.color = '#721c24';
+                resultDiv.style.display = 'block';
+                const submitButton = document.querySelector('#create-invite-form button[type="button"]');
+                submitButton.disabled = false;
+                submitButton.innerHTML = '<i class="fas fa-plus"></i> Создать';
+            });
+        }
+
+        function deleteInvite(inviteId) {
+            if (confirm('Вы уверены, что хотите удалить этот инвайт?')) {
+                fetch('/delete_channel_invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: 'invite_id=' + inviteId
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Удалить карточку инвайта
+                        const inviteCard = document.querySelector(`[data-invite-id="${inviteId}"]`).closest('.invite-card');
+                        inviteCard.remove();
+                        alert('Инвайт удален');
+                    } else {
+                        alert('Ошибка: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Ошибка при удалении инвайта');
+                });
+            }
+        }
+    </script>
+</div>

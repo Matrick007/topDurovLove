@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Подписка на канал - {{ channel.name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+
+    
+    <div class="join-invite-container">
+        <div class="invite-header">
+            <h2>Присоединиться к каналу</h2>
+            <p>Вы были приглашены присоединиться к этому каналу.</p>
+        </div>
+
+        <div class="channel-info shimmer">
+            <div class="channel-avatar">
+                <i class="fas fa-hashtag"></i>
+            </div>
+            <div class="channel-details">
+                <h3>{{ channel.name }}</h3>
+                <p>{{ channel.description or 'Нет описания' }}</p>
+                <div class="channel-meta">
+                    <span><i class="fas fa-user"></i> Создан: {{ channel.creator }}</span>
+                    <span><i class="fas fa-users"></i> Участников: {{ member_count }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="invite-actions">
+            <form method="POST" action="{{ url_for('join_channel_via_invite_get', invite_code=invite_code) }}">
+                <button type="submit" class="btn btn-primary btn-large">
+                    <i class="fas fa-plus"></i>
+                    Подписаться на канал
+                </button>
+            </form>
+            <p class="invite-note">
+                После подписки вы сможете участвовать в обсуждениях канала.
+            </p>
+        </div>
+
+        {% if error %}
+        <div class="error-message">
+            {{ error }}
+        </div>
+        {% endif %}
+    </div>
+
+<style>
+/* ================= ROOT ================= */
+:root {
+    --accent: #ff8a00;
+    --accent-dark: #e67600;
+
+    --bg-main: #f4f5f7;
+    --bg-card: #ffffff;
+    --bg-soft: #f1f2f4;
+
+    --text-main: #0f172a;
+    --text-muted: #6b7280;
+
+    --border: rgba(15, 23, 42, 0.08);
+}
+
+/* ================= BASE ================= */
+* {
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    margin: 0;
+    color: var(--text-main);
+    background:
+        radial-gradient(1200px 600px at top, #ffffff 0%, var(--bg-main) 65%);
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* ================= FULLSCREEN EMOJI PATTERN ================= */
+body::before {
+    content:
+        "💬 ✉️ 🔒 🌐 ⚡ 📡 📨 🗨️ 🔐 📱 💭 💬 ✉️ 🔒 🌐 ⚡ 📡 📨 🗨️ 🔐 📱 💭 "
+
+        "💬 ✉️ 🔒 🌐 ⚡ 📡 📨 🗨️ 🔐 📱 💭 💬 ✉️ 🔒 🌐 ⚡ 📡 📨 🗨️ 🔐 📱 💭";
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    font-size: 56px;
+    line-height: 1.8;
+    letter-spacing: 32px;
+
+    white-space: normal;
+    word-break: break-word;
+
+    padding: 32px;
+
+    color: rgba(15, 23, 42, 0.045);
+
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ================= CONTAINER ================= */
+.join-invite-container {
+    position: relative;
+    z-index: 1;
+
+    max-width: 520px;
+    margin: 80px auto;
+    padding: 56px 44px 48px;
+
+    background: var(--bg-card);
+    border-radius: 28px;
+    border: 1px solid var(--border);
+
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.08),
+        0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+/* ================= SOFIA BRAND ================= */
+.join-invite-container::before {
+    content: "SOFIA";
+    position: absolute;
+    top: 26px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: 0.34em;
+
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    opacity: 0.95;
+    pointer-events: none;
+}
+
+/* ================= HEADER ================= */
+.invite-header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-top: 28px;
+}
+
+.invite-header h2 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+}
+
+.invite-header p {
+    font-size: 15px;
+    color: var(--text-muted);
+}
+
+/* ================= CHANNEL CARD ================= */
+.channel-info {
+    display: flex;
+    gap: 20px;
+    padding: 26px;
+    background: var(--bg-soft);
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    margin-bottom: 36px;
+}
+
+.channel-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    color: white;
+    box-shadow: 0 16px 32px rgba(255, 138, 0, 0.35);
+}
+
+.channel-details h3 {
+    margin: 0 0 6px;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.channel-details p {
+    margin: 0 0 12px;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.channel-meta {
+    display: flex;
+    gap: 18px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* ================= BUTTON ================= */
+.btn-large {
+    width: 100%;
+    height: 56px;
+    border-radius: 16px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+
+    box-shadow: 0 18px 36px rgba(255, 138, 0, 0.45);
+    transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.btn-large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 26px 52px rgba(255, 138, 0, 0.55);
+}
+
+.invite-note {
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+/* ================= ERROR ================= */
+.error-message {
+    margin-top: 20px;
+    padding: 14px;
+    background: #fff1f1;
+    color: #b91c1c;
+    border-radius: 14px;
+    border: 1px solid #ffd4d4;
+    text-align: center;
+}
+
+/* ================= DARK MODE ================= */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-main: #0b0b0c;
+        --bg-card: #111113;
+        --bg-soft: #1a1a1d;
+        --text-main: #f8fafc;
+        --text-muted: #9ca3af;
+        --border: rgba(255,255,255,0.08);
+    }
+
+    body {
+        background:
+            radial-gradient(1000px 500px at top, #141414, #000);
+    }
+
+    body::before {
+        color: rgba(255,255,255,0.055);
+    }
+}
+
+/* ================= UX ================= */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+</style>
+
+
+<script>
+document.querySelector('.btn-large')?.addEventListener('click', function () {
+    this.innerHTML = 'Подписываем...';
+    this.style.opacity = '0.8';
+    this.style.transform = 'scale(0.97)';
+});
+</script>
+</body>
+</html>

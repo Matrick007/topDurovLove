@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в аккаунт</title>
+    <style>
+        /* --- General Page Styles --- */
+        body {
+            background-color: #F4F6F8; /* Light gray background for contrast */
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- Main Wrapper for the Split-Screen --- */
+        .login-wrapper {
+            display: flex;
+            width: 100%;
+            max-width: 900px;
+            min-height: 600px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- Left "Mirror" Panel (Decorative) --- */
+        .welcome-panel {
+            flex: 1;
+            background: linear-gradient(160deg, #FF6F00, #E65100);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            color: white;
+            overflow: hidden; /* To contain the animated shapes */
+        }
+        
+        .welcome-panel h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            z-index: 2;
+        }
+
+        .welcome-panel p {
+            font-size: 18px;
+            max-width: 300px;
+            text-align: center;
+            line-height: 1.6;
+            z-index: 2;
+            opacity: 0.9;
+        }
+        
+        /* --- Animated Blobs --- */
+        .blob {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob-1 {
+            width: 200px;
+            height: 200px;
+            top: -50px;
+            left: -80px;
+            animation-duration: 25s;
+        }
+
+        .blob-2 {
+            width: 300px;
+            height: 300px;
+            bottom: -100px;
+            right: -120px;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from {
+                transform: rotate(0deg) scale(1.1) translateX(-20px);
+            }
+            to {
+                transform: rotate(360deg) scale(1) translateX(20px);
+            }
+        }
+
+
+        /* --- Right Form Panel --- */
+        .form-panel {
+            flex: 1;
+            padding: 50px 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .form-panel h2 {
+            color: #E65100;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* --- Flash/Error Messages --- */
+        .flash-error {
+            color: #D32F2F;
+            background: #FFEBEE;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            border: 1px solid #FFCDD2;
+        }
+
+        /* --- Input Fields --- */
+        .input-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .input-group .input-icon {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #FF9800;
+            width: 20px;
+            height: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px 16px 55px;
+            border: 2px solid #FFDDC2;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #FFF8F2;
+            color: #5F4D3C;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .input-group input:focus {
+            border-color: #FF6F00;
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(255, 111, 0, 0.15); /* Neon glow effect */
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #BCAAA4;
+        }
+        
+        /* --- Submit Button --- */
+        .form-panel button[type="submit"] {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(90deg, #FF8F00, #FF6F00);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(255, 111, 0, 0.25);
+            margin-top: 15px;
+        }
+
+        .form-panel button[type="submit"]:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 111, 0, 0.35);
+        }
+
+        .form-panel button[type="submit"]:active {
+            transform: translateY(0);
+        }
+        
+        /* --- Extra Links --- */
+        .extra-links {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .extra-links a {
+            color: #E65100;
+            text-decoration: none;
+        }
+        .extra-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 800px) {
+            .login-wrapper {
+                flex-direction: column;
+                min-height: auto;
+                max-width: 450px;
+            }
+            .welcome-panel {
+                display: none; /* Hide decorative panel on mobile to save space */
+            }
+            .form-panel {
+                padding: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <!-- Left "Mirror" Panel -->
+        <div class="welcome-panel">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <h1>С возвращением!</h1>
+            <p>Мы рады видеть вас снова. Войдите, чтобы продолжить.</p>
+        </div>
+
+        <!-- Right Form Panel -->
+        <div class="form-panel">
+            <h2>Вход в систему</h2>
+
+            {% if error %}
+                <p class="flash-error">{{ error }}</p>
+            {% endif %}
+            
+            <form method="POST">
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Имя пользователя" required>
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                </div>
+
+                <div class="input-group">
+                    <input type="password" id="password" name="password" placeholder="Пароль" required>
+                    <svg class="input-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                    </svg>
+                    <span class="password-toggle" data-target="password">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </span>
+                </div>
+                
+                <button type="submit">Войти</button>
+
+                <div class="extra-links">
+                    <a href="/register">Создать аккаунт</a>
+                    <a href="/forgot-password">Забыли пароль?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordToggle = document.querySelector('.password-toggle');
+            if(passwordToggle) {
+                passwordToggle.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const passwordInput = document.getElementById(targetId);
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                    } else {
+                        passwordInput.type = 'password';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
