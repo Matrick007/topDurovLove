@@ -1,0 +1,36 @@
+<script src="{{ url_for('static', filename='notification.js') }}"></script>
+<script>
+    // Загрузка темы при загрузке страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadSavedTheme();
+    });
+</script>
+<div class="tab-content" id="settings">
+    <h2><i class="fas fa-cog"></i> Настройки канала</h2>
+    <form method="POST" action="/update_channel_settings/{{ channel.name }}" class="settings-form">
+        <div class="form-group">
+            <label for="name">Название канала</label>
+            <input type="text" id="name" name="name" value="{{ channel.name }}" required>
+            <p class="form-hint">Название будет отображаться в списке чатов и в заголовке.</p>
+        </div>
+
+        <div class="form-group">
+            <label for="description">Описание канала</label>
+            <textarea id="description" name="description" placeholder="Расскажите о теме и правилах вашего канала...">{{ channel.description or '' }}</textarea>
+            <p class="form-hint">Краткое описание поможет новым участникам понять, о чем ваш канал.</p>
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="is_private" {% if channel.is_private %}checked{% endif %}>
+                Приватный канал
+            </label>
+            <p class="form-hint">В приватный канал можно вступить только по пригласительной ссылке.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i>
+            Сохранить изменения
+        </button>
+    </form>
+</div>

@@ -1,0 +1,400 @@
+/* === ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ МОБИЛЬНОГО ПРОФИЛЯ ПОЛЬЗОВАТЕЛЯ === */
+
+/* Улучшенные стили для профиля на мобильных устройствах */
+@media (max-width: 768px) {
+    .profile-content {
+        padding: 60px 20px 20px;
+        min-height: 100vh;
+    }
+    
+    .profile-container {
+        margin: 20px;
+        padding: 20px;
+    }
+    
+    /* Улучшенные стили для аватара */
+    .avatar-big {
+        width: 200px;
+        height: 200px;
+        margin-top: -40px;
+        font-size: 80px;
+    }
+    
+    /* Улучшенные стили для overlay аватара */
+    .avatar-overlay-buttons {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .avatar-overlay-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        width: 100%;
+    }
+    
+    /* Улучшенные стили для статистики */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .stats-grid > div {
+        padding: 15px;
+    }
+    
+    .stats-grid i {
+        font-size: 20px;
+    }
+    
+    .stats-grid .stat-number {
+        font-size: 20px;
+    }
+    
+    .stats-grid .stat-label {
+        font-size: 12px;
+    }
+    
+    /* Улучшенные стили для информации о пользователе */
+    .user-info {
+        padding: 20px;
+    }
+    
+    .user-info h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    
+    .user-info p {
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+    
+    /* Улучшенные стили для кнопок действий */
+    .profile-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .profile-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    /* Улучшенные стили для навигации по профилю */
+    .profile-nav {
+        display: flex;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 10px 0;
+        margin-bottom: 20px;
+    }
+    
+    .nav-item {
+        flex: 0 0 auto;
+        min-width: 120px;
+        padding: 12px 16px;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+    
+    /* Улучшенные стили для табов */
+    .tab-content {
+        padding: 15px;
+    }
+    
+    .tab-content h3 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+    
+    /* Улучшенные стили для формы редактирования */
+    .edit-profile-form {
+        gap: 15px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-label {
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+    
+    .form-input, .form-textarea, .form-select {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+    
+    .char-counter {
+        font-size: 11px;
+    }
+    
+    .bio-preview {
+        padding: 12px;
+        font-size: 13px;
+    }
+    
+    /* Улучшенные стили для кнопок формы */
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+        padding-top: 15px;
+    }
+    
+    .btn-primary, .btn-secondary {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    /* Улучшенные стили для приватности */
+    .privacy-toggle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    /* Улучшенные стили для баннера */
+    .profile-banner {
+        height: 150px;
+    }
+    
+    /* Улучшенные стили для модальных окон */
+    #avatar-modal img {
+        max-width: 85%;
+        max-height: 85%;
+    }
+    
+    #avatar-modal button {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    /* Увеличение минимального размера сенсорных элементов */
+    .profile-btn, .nav-item, .form-input, .form-textarea, .btn {
+        min-height: 44px;
+    }
+}
+
+/* Дополнительные стили для очень маленьких экранов */
+@media (max-width: 480px) {
+    .profile-content {
+        padding: 40px 15px 15px;
+    }
+    
+    .profile-container {
+        margin: 15px;
+        padding: 15px;
+    }
+    
+    .avatar-big {
+        width: 150px;
+        height: 150px;
+        margin-top: -30px;
+        font-size: 60px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    
+    .user-info h2 {
+        font-size: 20px;
+    }
+    
+    .user-info p {
+        font-size: 13px;
+    }
+    
+    .profile-actions {
+        gap: 8px;
+    }
+    
+    .profile-btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .profile-nav {
+        gap: 5px;
+    }
+    
+    .nav-item {
+        min-width: 100px;
+        padding: 10px 12px;
+        font-size: 12px;
+        margin-right: 5px;
+    }
+    
+    .tab-content {
+        padding: 10px;
+    }
+    
+    .tab-content h3 {
+        font-size: 16px;
+    }
+    
+    .edit-profile-form {
+        gap: 12px;
+    }
+    
+    .form-group {
+        margin-bottom: 12px;
+    }
+    
+    .form-input, .form-textarea, .form-select {
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    .btn-primary, .btn-secondary {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .close-profile-btn {
+        top: 15px;
+        right: 15px;
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    /* Улучшенные стили для статистики на очень маленьких экранах */
+    .stats-grid i {
+        font-size: 18px;
+    }
+    
+    .stats-grid .stat-number {
+        font-size: 18px;
+    }
+    
+    .stats-grid .stat-label {
+        font-size: 11px;
+    }
+    
+    /* Увеличение минимального размера сенсорных элементов */
+    .profile-btn, .nav-item, .form-input, .form-textarea, .btn, .avatar-overlay-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Поддержка сенсорных устройств */
+@media (hover: none) and (pointer: coarse) {
+    .profile-btn, .nav-item, .avatar-overlay, .stats-grid > div {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+
+    .profile-btn:hover, .nav-item:hover, .stats-grid > div:hover {
+        transform: none;
+        background: inherit;
+    }
+    
+    /* Увеличение области касания для сенсорных элементов */
+    .profile-btn, .nav-item, .close-profile-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Улучшенная доступность для мобильных устройств */
+@media (prefers-reduced-motion: reduce) {
+    .profile-btn, .nav-item, .stats-grid > div {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Улучшенные стили для редактирования профиля на мобильных */
+@media (max-width: 768px) {
+    .edit-profile-modal {
+        max-height: 100vh;
+    }
+    
+    .edit-profile-modal > div {
+        max-height: 100vh;
+        margin: 10px;
+        padding: 20px;
+    }
+    
+    .edit-profile-modal::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .scroll-indicator {
+        right: 20px;
+        bottom: 20px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .scroll-indicator i {
+        font-size: 18px;
+    }
+    
+    /* Улучшенные стили для загрузки аватара */
+    .avatar-upload-zone {
+        padding: 20px;
+    }
+    
+    .avatar-upload-zone .upload-icon {
+        font-size: 48px;
+    }
+    
+    .avatar-upload-zone .upload-text {
+        font-size: 16px;
+    }
+    
+    .avatar-upload-zone .upload-hint {
+        font-size: 12px;
+    }
+    
+    .upload-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+    
+    /* Улучшенные стили для превью изображения */
+    .image-preview {
+        max-width: 250px;
+        max-height: 250px;
+    }
+    
+    .image-preview-actions {
+        gap: 8px;
+    }
+    
+    .preview-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Улучшенные стили для просмотра профиля других пользователей */
+@media (max-width: 768px) {
+    .view-profile-container {
+        margin: 15px;
+        padding: 15px;
+    }
+    
+    .view-profile-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .view-profile-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

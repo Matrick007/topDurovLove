@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }} - Мероприятие</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .event-detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .event-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .event-title {
+            margin: 0;
+            color: #333;
+        }
+        
+        .event-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .meta-item {
+            margin-bottom: 10px;
+        }
+        
+        .meta-label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .meta-value {
+            color: #333;
+        }
+        
+        .event-description {
+            margin: 20px 0;
+            line-height: 1.6;
+        }
+        
+        .event-actions {
+            margin: 30px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            cursor: pointer;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background-color: #007bff;
+            color: white;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+        
+        .participants-section {
+            margin-top: 30px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        
+        .participants-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .participant-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .participant-status {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .status-confirmed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-invited {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-declined {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .invite-form {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        
+        .invite-form input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .invite-form button {
+            padding: 8px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        .invite-via-chat {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+    
+    <div class="event-detail-container" data-event-id="{{ event.id }}">
+        <a href="{{ url_for('events') }}" class="back-link">← Назад к мероприятиям</a>
+        
+        <div class="event-header">
+            <h1 class="event-title">{{ event.title }}</h1>
+        </div>
+        
+        <div class="event-meta">
+            <div class="meta-item">
+                <span class="meta-label">Дата и время:</span>
+                <span class="meta-value">{{ event.event_date }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Место:</span>
+                <span class="meta-value">{{ event.location }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Организатор:</span>
+                <span class="meta-value">{{ event.creator_username }}</span>
+            </div>
+        </div>
+        
+        <div class="event-description">
+            <h3>Описание</h3>
+            <p>{{ event.description or 'Нет описания' }}</p>
+        </div>
+        
+        <div class="event-actions">
+            {% if session.user_id == event.creator_id %}
+                <!-- Организатор не может покинуть мероприятие, только управлять -->
+                <span class="action-btn btn-success">Вы организатор</span>
+                
+                <!-- Форма для приглашения участников -->
+                <div class="invite-form">
+                    <form method="POST" action="{{ url_for('invite_to_event', event_id=event.id) }}" style="display: flex; align-items: center;">
+                        <input type="text" name="username" placeholder="Имя пользователя для приглашения" required>
+                        <button type="submit">Пригласить</button>
+                    </form>
+                    <button onclick="openInviteModal()" class="action-btn btn-primary" style="margin-top: 10px;">Пригласить через чат</button>
+                </div>
+            {% else %}
+                <!-- Для участников показываем кнопки действий -->
+                {% set current_user_status = participants|selectattr('username', 'equalto', session.username)|first %}
+                {% if current_user_status %}
+                    {% if current_user_status.status == 'confirmed' %}
+                        <form method="POST" action="{{ url_for('update_event_status', event_id=event.id) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="declined">
+                            <button type="submit" class="action-btn btn-danger">Отказаться</button>
+                        </form>
+                    {% elif current_user_status.status == 'declined' %}
+                        <form method="POST" action="{{ url_for('update_event_status', event_id=event.id) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="confirmed">
+                            <button type="submit" class="action-btn btn-success">Подтвердить участие</button>
+                        </form>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('update_event_status', event_id=event.id) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="confirmed">
+                            <button type="submit" class="action-btn btn-success">Подтвердить участие</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('update_event_status', event_id=event.id) }}" style="display: inline;">
+                            <input type="hidden" name="status" value="declined">
+                            <button type="submit" class="action-btn btn-danger">Отказаться</button>
+                        </form>
+                    {% endif %}
+                    
+                    <form method="POST" action="{{ url_for('leave_event', event_id=event.id) }}" style="display: inline;">
+                        <button type="submit" class="action-btn btn-warning">Покинуть мероприятие</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('join_event', event_id=event.id) }}" style="display: inline;">
+                        <button type="submit" class="action-btn btn-primary">Принять участие</button>
+                    </form>
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <div class="participants-section">
+            <h3 class="section-title">Участники ({{ participants|length }})</h3>
+            <ul class="participants-list">
+                {% for participant in participants %}
+                    <li class="participant-item">
+                        <span>{{ participant.username }}</span>
+                        <span class="participant-status
+                            {% if participant.status == 'confirmed' %}status-confirmed
+                            {% elif participant.status == 'invited' %}status-invited
+                            {% elif participant.status == 'declined' %}status-declined
+                            {% else %}{{ participant.status }}
+                            {% endif %}">
+                            {% if participant.status == 'confirmed' %}Подтвержден
+                            {% elif participant.status == 'invited' %}Приглашен
+                            {% elif participant.status == 'declined' %}Отказался
+                            {% else %}{{ participant.status }}
+                            {% endif %}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Модальное окно для приглашения через чат -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeInviteModal()">&times;</span>
+            <h3>Пригласить через чат</h3>
+            <div>
+                <input type="text" id="chatUsername" placeholder="Введите имя пользователя" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                <button onclick="sendEventInvite()" class="action-btn btn-primary">Отправить приглашение</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        
+        // Открыть модальное окно
+        function openInviteModal() {
+            document.getElementById('inviteModal').style.display = 'block';
+        }
+        
+        // Закрыть модальное окно
+        function closeInviteModal() {
+            document.getElementById('inviteModal').style.display = 'none';
+        }
+        
+        // Отправить приглашение через сокет
+        function sendEventInvite() {
+            const username = document.getElementById('chatUsername').value.trim();
+            const eventId = document.querySelector('.event-detail-container').dataset.eventId;
+            
+            if (!username) {
+                alert('Пожалуйста, введите имя пользователя');
+                return;
+            }
+            
+            socket.emit('invite_to_event', {
+                event_id: eventId,
+                username: username
+            });
+            
+            document.getElementById('chatUsername').value = '';
+            closeInviteModal();
+        }
+        
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            const modal = document.getElementById('inviteModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Обработка получения приглашения
+        socket.on('event_invitation', function(data) {
+            if (confirm(`Вас пригласили на мероприятие "${data.event_title}". Принять приглашение?`)) {
+                window.location.href = `/event/${data.event_id}`;
+            }
+        });
+        
+        // Обработка ошибок
+        socket.on('error', function(data) {
+            alert('Ошибка: ' + data.msg);
+        });
+    </script>
+</body>
+</html>

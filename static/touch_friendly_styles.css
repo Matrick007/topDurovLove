@@ -1,0 +1,175 @@
+/* === СТИЛИ ДЛЯ УДОБСТВА ИСПОЛЬЗОВАНИЯ НА СЕНСОРНЫХ УСТРОЙСТВАХ === */
+
+/* Общие стили для улучшения сенсорного взаимодействия */
+@media (hover: none) and (pointer: coarse) {
+    /* Увеличение минимального размера сенсорных элементов до 44x44px (рекомендованный размер) */
+    .chat-item, .nav-item, .filter-btn, .action-btn, .chat-input button, .back-btn,
+    .tab-button, .btn, .profile-btn, .member-card, .invite-card, .copy-btn, .delete-btn,
+    .avatar-overlay-btn, .search-result-item {
+        min-height: 44px;
+        min-width: 44px;
+        padding: 10px 12px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+    
+    /* Улучшение видимости состояния при нажатии */
+    .chat-item:active, .nav-item:active, .filter-btn:active, .action-btn:active,
+    .chat-input button:active, .back-btn:active, .tab-button:active, .btn:active,
+    .profile-btn:active, .member-card:active, .invite-card:active, .copy-btn:active,
+    .delete-btn:active, .avatar-overlay-btn:active {
+        opacity: 0.7;
+        transform: scale(0.95);
+        transition: all 0.1s ease;
+    }
+    
+    /* Отключение hover-эффектов на сенсорных устройствах */
+    .chat-item:hover, .nav-item:hover, .filter-btn:hover, .action-btn:hover,
+    .chat-input button:hover, .back-btn:hover, .tab-button:hover, .btn:hover,
+    .profile-btn:hover, .member-card:hover, .invite-card:hover {
+        background: inherit;
+        transform: none;
+    }
+    
+    /* Улучшение сенсорного взаимодействия для аватаров */
+    .avatar, .profile-avatar-sidebar, .nav-avatar {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Улучшение сенсорного взаимодействия для элементов управления в чате */
+    .message, .sent, .received {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Улучшение сенсорного взаимодействия для элементов ввода */
+    .chat-input input, .search-input, .form-input, .form-textarea {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        min-height: 44px;
+    }
+    
+    /* Улучшение сенсорного взаимодействия для переключателей */
+    .toggle-switch {
+        min-width: 50px;
+        min-height: 24px;
+    }
+}
+
+/* Дополнительные стили для улучшения удобства на сенсорных устройствах */
+.touch-target {
+    position: relative;
+}
+
+.touch-target::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: transparent;
+    transition: background 0.2s ease;
+}
+
+.touch-target:active::after {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Улучшение доступности для сенсорных элементов */
+@media (hover: none) and (pointer: coarse) {
+    /* Увеличение размера целевых областей для кликов */
+    .chat-item *, .nav-item *, .filter-btn *, .action-btn *, .chat-input button *,
+    .back-btn *, .tab-button *, .btn *, .profile-btn *, .member-card *,
+    .invite-card *, .copy-btn *, .delete-btn *, .avatar-overlay-btn * {
+        pointer-events: none;
+    }
+    
+    .chat-item, .nav-item, .filter-btn, .action-btn, .chat-input button,
+    .back-btn, .tab-button, .btn, .profile-btn, .member-card, .invite-card,
+    .copy-btn, .delete-btn, .avatar-overlay-btn {
+        pointer-events: auto;
+    }
+}
+
+/* Улучшение прокрутки для сенсорных устройств */
+@media (hover: none) and (pointer: coarse) {
+    .chat-items, .messages, .posts-list, .members-grid, .invites-list,
+    .profile-content, .edit-profile-modal {
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для элементов с анимацией */
+@media (hover: none) and (pointer: coarse) {
+    /* Отключение сложных анимаций на сенсорных устройствах для лучшей производительности */
+    .chat-item, .message, .nav-item, .tab-button, .btn {
+        will-change: auto;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для модальных окон */
+@media (hover: none) and (pointer: coarse) {
+    .modal, .profile-modal, .edit-profile-modal, #contacts-modal, #avatar-modal {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .modal *, .profile-modal *, .edit-profile-modal *, #contacts-modal *, #avatar-modal * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для элементов с drag-and-drop */
+@media (hover: none) and (pointer: coarse) {
+    .avatar-upload-zone {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для аудио-плееров */
+@media (hover: none) and (pointer: coarse) {
+    .audio-player {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    .play-button, .progress-bar {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для контекстных меню */
+@media (hover: none) and (pointer: coarse) {
+    .context-menu {
+        -webkit-touch-callout: default;
+        -webkit-user-select: text;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для элементов с tooltip */
+@media (hover: none) and (pointer: coarse) {
+    /* Отключение тултипов на сенсорных устройствах */
+    .tooltip {
+        display: none;
+    }
+}
+
+/* Улучшение сенсорного взаимодействия для элементов с выпадающими списками */
+@media (hover: none) and (pointer: coarse) {
+    select {
+        -webkit-appearance: menulist;
+        -moz-appearance: menulist;
+        appearance: menulist;
+    }
+}

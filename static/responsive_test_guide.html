@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тестирование адаптивности интерфейса</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #ff8c00;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #333;
+            border-bottom: 2px solid #ff8c00;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .screen-size {
+            display: inline-block;
+            background: #ff8c00;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        ul {
+            padding-left: 20px;
+        }
+        
+        li {
+            margin: 10px 0;
+        }
+        
+        .recommendation {
+            background: #e8f4fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Тестирование адаптивности интерфейса</h1>
+        
+        <div class="test-section">
+            <h2>Общая информация</h2>
+            <p>Этот документ содержит руководство по тестированию адаптивности интерфейса на различных размерах экранов. Все стили были обновлены для обеспечения корректного отображения на мобильных устройствах, планшетах и десктопах.</p>
+        </div>
+        
+        <div class="test-section">
+            <h2>Размеры экранов для тестирования</h2>
+            
+            <div class="recommendation">
+                <strong>Мобильные устройства:</strong>
+                <ul>
+                    <li><span class="screen-size">320x568px</span> - iPhone 5/SE</li>
+                    <li><span class="screen-size">375x667px</span> - iPhone 6/7/8</li>
+                    <li><span class="screen-size">414x896px</span> - iPhone XR/11</li>
+                    <li><span class="screen-size">360x640px</span> - Android (Samsung Galaxy S8)</li>
+                    <li><span class="screen-size">412x914px</span> - Pixel 6 Pro</li>
+                </ul>
+            </div>
+            
+            <div class="recommendation">
+                <strong>Планшеты:</strong>
+                <ul>
+                    <li><span class="screen-size">768x1024px</span> - iPad (9.7")</li>
+                    <li><span class="screen-size">834x1194px</span> - iPad Air (10.5")</li>
+                    <li><span class="screen-size">1024x1366px</span> - iPad Pro (12.9")</li>
+                </ul>
+            </div>
+            
+            <div class="recommendation">
+                <strong>Десктопы:</strong>
+                <ul>
+                    <li><span class="screen-size">1366x768px</span> - Ноутбуки</li>
+                    <li><span class="screen-size">1920x1080px</span> - Full HD мониторы</li>
+                    <li><span class="screen-size">2560x1440px</span> - QHD мониторы</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Элементы для проверки</h2>
+            
+            <h3>Основной интерфейс (index.html)</h3>
+            <ul>
+                <li>✓ Боковая панель чатов корректно скрывается/показывается на мобильных</li>
+                <li>✓ Нижняя навигация отображается на мобильных устройствах</li>
+                <li>✓ Размеры сенсорных элементов не менее 44x44px</li>
+                <li>✓ Текст читаем на всех размерах экранов</li>
+                <li>✓ Форма ввода сообщений корректно отображается на мобильных</li>
+                <li>✓ Кнопки и элементы управления легко доступны</li>
+            </ul>
+            
+            <h3>Чаты</h3>
+            <ul>
+                <li>✓ Сообщения корректно отображаются на всех размерах экранов</li>
+                <li>✓ Аудио-плееры правильно масштабируются</li>
+                <li>✓ Кнопка "назад" видна и функциональна на мобильных</li>
+                <li>✓ Клавиатура не перекрывает элементы интерфейса</li>
+            </ul>
+            
+            <h3>Каналы</h3>
+            <ul>
+                <li>✓ Интерфейс управления каналом адаптируется к мобильным экранам</li>
+                <li>✓ Вкладки переключаются корректно на мобильных</li>
+                <li>✓ Карточки участников и инвайтов корректно отображаются</li>
+                <li>✓ Формы создания инвайтов удобны для заполнения</li>
+            </ul>
+            
+            <h3>Профиль пользователя</h3>
+            <ul>
+                <li>✓ Аватар пользователя корректно отображается</li>
+                <li>✓ Форма редактирования профиля удобна для заполнения</li>
+                <li>✓ Информация о пользователе читаема на всех размерах</li>
+                <li>✓ Кнопки действий доступны и видны</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>Технические аспекты</h2>
+            
+            <h3>Медиа-запросы</h3>
+            <ul>
+                <li>✓ <code>@media (max-width: 768px)</code> - для планшетов и мобильных</li>
+                <li>✓ <code>@media (max-width: 480px)</code> - для маленьких мобильных экранов</li>
+                <li>✓ <code>@media (max-width: 360px)</code> - для самых маленьких экранов</li>
+                <li>✓ <code>@media (hover: none) and (pointer: coarse)</code> - для сенсорных устройств</li>
+            </ul>
+            
+            <h3>Сенсорная оптимизация</h3>
+            <ul>
+                <li>✓ Все интерактивные элементы имеют минимальный размер 44x44px</li>
+                <li>✓ Отключен <code>:hover</code> эффект на сенсорных устройствах</li>
+                <li>✓ Улучшена область касания для всех кнопок</li>
+                <li>✓ Улучшена прокрутка с помощью <code>-webkit-overflow-scrolling: touch</code></li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2>Рекомендации по тестированию</h2>
+            
+            <div class="recommendation">
+                <h3>Инструменты для тестирования</h3>
+                <ul>
+                    <li>Chrome DevTools Device Toolbar - для эмуляции различных размеров экранов</li>
+                    <li>Firefox Responsive Design Mode - альтернатива Chrome DevTools</li>
+                    <li>Реальные устройства - наиболее точный способ тестирования</li>
+                    <li>BrowserStack или аналогичные сервисы для тестирования на различных устройствах</li>
+                </ul>
+            </div>
+            
+            <div class="warning">
+                <h3>Частые проблемы</h3>
+                <ul>
+                    <li>Перекрытие элементов клавиатурой на мобильных устройствах</li>
+                    <li>Слишком маленький размер текста или кнопок</li>
+                    <li>Неправильное масштабирование изображений</li>
+                    <li>Проблемы с позиционированием элементов</li>
+                </ul>
+            </div>
+            
+            <div class="success">
+                <h3>Успешная адаптация</h3>
+                <ul>
+                    <li>✓ Все функции доступны на всех размерах экранов</li>
+                    <li>✓ Интерфейс сохраняет удобство использования</li>
+                    <li>✓ Нет горизонтальной прокрутки на мобильных устройствах</li>
+                    <li>✓ Элементы не накладываются друг на друга</li>
+                    <li>✓ Текст читаем без увеличения масштаба</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Файлы стилей</h2>
+            <p>Следующие файлы были обновлены для обеспечения адаптивности:</p>
+            <ul>
+                <li><code>updated_style.css</code> - основные стили с улучшенной адаптивностью</li>
+                <li><code>mobile_chat_styles.css</code> - стили для мобильных чатов</li>
+                <li><code>mobile_channel_styles.css</code> - стили для мобильных каналов</li>
+                <li><code>mobile_profile_styles.css</code> - стили для мобильного профиля</li>
+                <li><code>mobile_navigation_styles.css</code> - стили для мобильной навигации</li>
+                <li><code>touch_friendly_styles.css</code> - стили для сенсорных устройств</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,290 @@
+/* === ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ МОБИЛЬНЫХ КАНАЛОВ === */
+
+/* Улучшенные стили для управления каналами на мобильных устройствах */
+@media (max-width: 992px) {
+    .channel-layout {
+        flex-direction: column;
+    }
+
+    .channel-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--channel-border);
+        box-shadow: none;
+        height: auto;
+        padding: 20px;
+    }
+
+    .channel-main {
+        padding: 20px;
+    }
+    
+    .tab-navigation {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+    
+    .tab-button {
+        flex: 1;
+        min-width: 120px;
+        padding: 12px 10px;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .add-member-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .create-invite-form {
+        grid-template-columns: 1fr;
+    }
+
+    .invite-stats {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .channel-main {
+        padding: 15px;
+    }
+
+    .tab-button {
+        padding: 12px 15px;
+        font-size: 14px;
+        min-width: 100px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group textarea {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+
+    .btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    /* Улучшенные стили для карточек участников */
+    .member-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .member-info {
+        width: 100%;
+    }
+    
+    .member-actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    /* Улучшенные стили для карточек инвайтов */
+    .invite-card {
+        flex-direction: column;
+    }
+    
+    .invite-card-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: stretch;
+    }
+    
+    .invite-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    
+    .copy-btn, .delete-btn {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    .invite-stats {
+        flex-wrap: wrap;
+    }
+    
+    .stat {
+        flex-basis: 50%;
+    }
+}
+
+/* Дополнительные стили для очень маленьких экранов */
+@media (max-width: 480px) {
+    .channel-layout {
+        flex-direction: column;
+    }
+    
+    .channel-main {
+        padding: 10px;
+    }
+    
+    .back-link {
+        padding: 10px 15px;
+        font-size: 14px;
+    }
+    
+    .back-link i {
+        margin-right: 5px;
+    }
+    
+    .tab-button {
+        padding: 10px 8px;
+        font-size: 12px;
+        min-width: 80px;
+    }
+    
+    .tab-button i {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 16px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group textarea {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+    
+    .btn i {
+        margin-right: 5px;
+    }
+    
+    /* Увеличение минимального размера сенсорных элементов */
+    .tab-button, .btn, .form-group input, .form-group textarea {
+        min-height: 44px;
+    }
+    
+    /* Улучшенные стили для списка участников */
+    .members-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .member-card {
+        padding: 15px;
+    }
+    
+    /* Улучшенные стили для инвайтов */
+    .invite-card {
+        padding: 15px;
+    }
+    
+    .invite-card-header {
+        padding: 15px 0;
+    }
+    
+    .invite-card-body {
+        padding: 10px 0;
+    }
+    
+    .stat {
+        flex-basis: 100%;
+    }
+}
+
+/* Поддержка сенсорных устройств */
+@media (hover: none) and (pointer: coarse) {
+    .tab-button, .btn, .member-card, .invite-card, .copy-btn, .delete-btn {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+    }
+
+    .tab-button:hover, .btn:hover, .member-card:hover, .invite-card:hover {
+        transform: none;
+    }
+    
+    /* Увеличение области касания для сенсорных элементов */
+    .tab-button, .btn, .copy-btn, .delete-btn {
+        min-height: 44px;
+        min-width: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Улучшенная доступность для мобильных устройств */
+@media (prefers-reduced-motion: reduce) {
+    .tab-button, .btn, .member-card, .invite-card {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* Улучшенные стили для модального окна контактов */
+@media (max-width: 768px) {
+    #contacts-modal > div {
+        width: 95%;
+        margin: 20px auto;
+        padding: 20px;
+    }
+    
+    #contacts-modal h3 {
+        margin: 0 0 15px;
+        font-size: 18px;
+    }
+    
+    #contacts-list {
+        max-height: 200px;
+    }
+    
+    #contacts-modal button, .btn {
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+}
+
+/* Улучшенные стили для формы создания инвайта */
+@media (max-width: 768px) {
+    .create-invite-form {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .create-invite-form .form-group {
+        margin-bottom: 0;
+    }
+    
+    .create-invite-form .form-group label {
+        margin-bottom: 6px;
+    }
+    
+    .create-invite-form .form-group input {
+        margin-bottom: 5px;
+    }
+    
+    .create-invite-form .form-group:last-child {
+        align-self: stretch;
+    }
+    
+    .create-invite-form .form-group:last-child button {
+        width: 100%;
+    }
+}
